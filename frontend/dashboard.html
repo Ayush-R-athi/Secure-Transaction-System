@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero-Trust Security Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --bg-dark: #050a15; 
+            --panel-bg: rgba(13, 17, 28, 0.75); 
+            --emerald: #00ff9d; 
+            --emerald-glow: rgba(0, 255, 157, 0.4);
+            --cyber-red: #ff3366; 
+            --cyber-red-glow: rgba(255, 51, 102, 0.4);
+            --text-main: #e2e8f0; 
+            --text-muted: #64748b;
+        }
+
+        /* 1. ANIMATED CYBER BACKGROUND */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-dark); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            background-image: 
+                linear-gradient(rgba(0, 255, 157, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 157, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 40px 40px; }
+        }
+
+        header { text-align: center; margin-bottom: 30px; }
+        header h1 { 
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--emerald); 
+            text-transform: uppercase; 
+            letter-spacing: 3px; 
+            margin-bottom: 5px; 
+            text-shadow: 0 0 10px var(--emerald-glow);
+        }
+
+        .dashboard-container { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 20px; width: 100%; max-width: 1400px; }
+        
+        /* 2. GLASSMORPHISM PANELS */
+        .panel { 
+            background-color: var(--panel-bg); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 157, 0.15); 
+            border-radius: 8px; 
+            padding: 20px; 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 255, 157, 0.02); 
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Panel accent line */
+        .panel::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--emerald), transparent);
+            opacity: 0.5;
+        }
+
+        .panel h2 { 
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.2rem; 
+            border-bottom: 1px solid rgba(0, 255, 157, 0.2); 
+            padding-bottom: 10px; 
+            margin-top: 0; 
+            color: var(--emerald); 
+            text-shadow: 0 0 5px var(--emerald-glow);
+        }
+        
+        /* Form Styles */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 0.75rem; color: var(--emerald); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;}
+        .form-group input { 
+            width: 90%; padding: 10px; 
+            background-color: rgba(0,0,0,0.5); 
+            border: 1px solid #333; 
+            color: white; border-radius: 4px; font-family: 'Share Tech Mono', monospace; font-size: 1rem;
+            transition: all 0.3s;
+        }
+        .form-group input:focus { outline: none; border-color: var(--emerald); box-shadow: 0 0 10px var(--emerald-glow); }
+
+        /* Button Styles */
+        button { 
+            font-family: 'Share Tech Mono', monospace;
+            width: 100%; padding: 12px; margin-bottom: 15px; border: none; border-radius: 4px; 
+            font-weight: bold; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 2px; 
+            position: relative; overflow: hidden;
+        }
+        .btn-valid { background-color: rgba(0, 255, 157, 0.1); color: var(--emerald); border: 1px solid var(--emerald); box-shadow: 0 0 10px rgba(0,255,157,0.1); }
+        .btn-valid:hover { background-color: var(--emerald); color: #000; box-shadow: 0 0 20px var(--emerald-glow); }
+        
+        .btn-attack { background-color: rgba(255, 51, 102, 0.1); color: var(--cyber-red); border: 1px solid var(--cyber-red); box-shadow: 0 0 10px rgba(255,51,102,0.1); }
+        .btn-attack:hover { background-color: var(--cyber-red); color: #fff; box-shadow: 0 0 20px var(--cyber-red-glow); }
+
+        /* PULSING STATUS INDICATOR */
+        .status-dot {
+            display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+            margin-left: 5px;
+        }
+        .status-online { background-color: var(--emerald); box-shadow: 0 0 10px var(--emerald); animation: pulseGreen 2s infinite; }
+        .status-offline { background-color: var(--cyber-red); box-shadow: 0 0 10px var(--cyber-red); animation: pulseRed 2s infinite; }
+
+        @keyframes pulseGreen { 0% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(0, 255, 157, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0); } }
+        @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(255, 51, 102, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 51, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 51, 102, 0); } }
+
+        /* 4. CRT TERMINAL STYLES */
+        .terminal-container { position: relative; }
+        .terminal { 
+            background-color: #03060a; color: var(--emerald); font-family: 'Share Tech Mono', 'Courier New', monospace; 
+            padding: 20px; border-radius: 6px; height: 450px; overflow-y: auto; 
+            border: 1px solid #1f2937; font-size: 0.95rem; line-height: 1.6;
+            text-shadow: 0 0 3px rgba(0, 255, 157, 0.5);
+        }
+        /* Scanline Overlay */
+        .terminal-container::after {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2; background-size: 100% 2px, 3px 100%; pointer-events: none; border-radius: 6px;
+        }
+
+        .log-line { margin: 8px 0; border-left: 2px solid transparent; padding-left: 8px; position: relative; z-index: 3;}
+        .log-step { color: #cbd5e1; border-left-color: #3b82f6; background: rgba(59, 130, 246, 0.05); }
+        .log-crypto { color: #fbbf24; font-size: 0.85rem; word-break: break-all; opacity: 0.8;}
+        .log-error { color: var(--cyber-red); border-left-color: var(--cyber-red); font-weight: bold; background: rgba(255, 51, 102, 0.1); text-shadow: 0 0 5px var(--cyber-red-glow);}
+        .log-success { color: var(--emerald); border-left-color: var(--emerald); font-weight: bold; background: rgba(0, 255, 157, 0.05); text-shadow: 0 0 5px var(--emerald-glow);}
+        
+        .blinking-cursor::after { content: '█'; animation: blink 1s step-end infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>[ Zero-Trust Transaction Monitor ]</h1>
+        <p style="color: var(--text-muted); font-family: 'Share Tech Mono', monospace; font-size: 1.1rem;">/// Secure Cryptographic Pipeline Active ///</p>
+    </header>
+
+    <div class="dashboard-container">
+        
+        <div class="panel">
+            <h2>>_ Input_Parameters</h2>
+            <div class="form-group">
+                <label>Target Sender_ID</label>
+                <input type="text" id="tx-sender" value="Ayush Rathi">
+            </div>
+            <div class="form-group">
+                <label>Target Receiver_ID</label>
+                <input type="text" id="tx-receiver" value="VIT University">
+            </div>
+            <div class="form-group">
+                <label>Transfer Amount (INR)</label>
+                <input type="number" id="tx-amount" value="50000">
+            </div>
+            <div class="form-group">
+                <label>Data Payload (Purpose)</label>
+                <input type="text" id="tx-purpose" value="Tuition Fee">
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>>_ Execution_Commands</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 25px;">
+                Select network vector to simulate.
+            </p>
+            
+            <button class="btn-valid" onclick="simulateTransaction('valid')">
+                [ Execute Secure Protocol ]
+            </button>
+            <button class="btn-attack" onclick="simulateTransaction('replay')">
+                [ Inject Replay Attack ]
+            </button>
+            <button class="btn-attack" onclick="simulateTransaction('tamper')">
+                [ Inject MITM Tamper ]
+            </button>
+
+            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px dashed rgba(0,255,157,0.3); font-family: 'Share Tech Mono', monospace;">
+                <p style="margin: 5px 0; font-size: 1rem;">Uplink Status: <span id="server-status-text">Scanning...</span> <span id="server-indicator" class="status-dot"></span></p>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>>_ Live_Security_Analysis</h2>
+            <div class="terminal-container">
+                <div class="terminal" id="terminal">
+                    <div class="log-line" style="color: #64748b;">[root@SOC-NODE-01 ~]# Initializing zero-trust architecture... <span class="blinking-cursor"></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SERVER_URL = "http://127.0.0.1:8000";
+        const terminal = document.getElementById('terminal');
+        let capturedEnvelope = null;
+
+        function logToTerminal(message, type = 'step') {
+            const div = document.createElement('div');
+            div.className = `log-line log-${type}`;
+            div.innerHTML = message;
+            terminal.appendChild(div);
+            // Auto scroll to bottom smoothly
+            terminal.scrollTo({ top: terminal.scrollHeight, behavior: 'smooth' });
+        }
+
+        // Check if server is running
+        function checkServer() {
+            fetch(SERVER_URL + "/")
+                .then(() => {
+                    document.getElementById('server-status-text').textContent = "SECURE";
+                    document.getElementById('server-status-text').style.color = "var(--emerald)";
+                    document.getElementById('server-indicator').className = "status-dot status-online";
+                })
+                .catch(() => {
+                    document.getElementById('server-status-text').textContent = "OFFLINE";
+                    document.getElementById('server-status-text').style.color = "var(--cyber-red)";
+                    document.getElementById('server-indicator').className = "status-dot status-offline";
+                });
+        }
+        checkServer();
+        setInterval(checkServer, 5000); // Check every 5 seconds
+
+        function getFormData() {
+            return {
+                sender: document.getElementById('tx-sender').value,
+                receiver: document.getElementById('tx-receiver').value,
+                amount: parseFloat(document.getElementById('tx-amount').value),
+                currency: "INR",
+                purpose: document.getElementById('tx-purpose').value
+            };
+        }
+
+        // Slight artificial delay to make it feel like real hacking/processing
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        async function simulateTransaction(type) {
+            logToTerminal("<br>--------------------------------------------------", "crypto");
+            
+            if (type === 'valid') {
+                logToTerminal("<b>[>>] SECURE CONNECTION ESTABLISHED</b>", "step");
+                await executeFlow(false, false);
+            } 
+            else if (type === 'replay') {
+                logToTerminal("<b>[!!] INJECTING REPLAY VECTOR</b>", "error");
+                if (!capturedEnvelope) {
+                    logToTerminal("<i>Error: No network packet captured yet. Execute a secure protocol first!</i>", "error");
+                    return;
+                }
+                await sleep(500);
+                logToTerminal("Cloning intercepted envelope. Resending duplicate payload to server...", "step");
+                await sleep(800);
+                await sendToServer(capturedEnvelope);
+            } 
+            else if (type === 'tamper') {
+                logToTerminal("<b>[!!] INITIATING MAN-IN-THE-MIDDLE INTERCEPTION</b>", "error");
+                await executeFlow(false, true);
+            }
+        }
+
+        async function executeFlow(isReplay, isTamper) {
+            try {
+                const txData = getFormData();
+                await sleep(400);
+                logToTerminal(`[1] Reading input: <b>${txData.sender}</b> -> <b>${txData.amount} INR</b> -> <b>${txData.receiver}</b>`, "step");
+                
+                await sleep(600);
+                logToTerminal("[2] Requesting dynamic Anti-Replay ID (Nonce) from Host...", "step");
+                
+                const response = await fetch(`${SERVER_URL}/build-custom-envelope`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(txData)
+                });
+                
+                if (!response.ok) throw new Error("Failed to build envelope");
+                let realEnvelope = await response.json();
+                
+                await sleep(600);
+                logToTerminal(`[3] Generating SHA-256 Fingerprint. Applying <b>RSA-PSS</b> cryptographic signature.`, "step");
+                
+                await sleep(600);
+                logToTerminal(`[4] Vaulting payload with <b>AES-256 GCM</b> Authenticated Encryption.`, "step");
+
+                if (isTamper) {
+                    await sleep(800);
+                    logToTerminal("<b>[🛑] MITM ACTIVE:</b> Flipped bit at memory index 0x0A to redirect funds!", "error");
+                    let chars = realEnvelope.ciphertext.split('');
+                    chars[10] = chars[10] === 'A' ? 'B' : 'A'; 
+                    realEnvelope.ciphertext = chars.join('');
+                }
+
+                capturedEnvelope = {...realEnvelope};
+                
+                let snippet = realEnvelope.ciphertext.substring(0, 40) + "...";
+                await sleep(400);
+                logToTerminal(`<i>[ENCRYPTED HEX DUMP] ${snippet}</i>`, "crypto");
+                
+                await sleep(800);
+                logToTerminal("[5] Pushing Digital Envelope across untrusted network...", "step");
+                await sendToServer(realEnvelope);
+
+            } catch (error) {
+                logToTerminal(`System Fault: ${error.message}`, "error");
+            }
+        }
+
+        async function sendToServer(envelope) {
+            try {
+                await sleep(800);
+                logToTerminal("[6] Payload reached firewall. Analyzing cryptography...", "step");
+                
+                const response = await fetch(`${SERVER_URL}/process-transaction`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(envelope)
+                });
+
+                const result = await response.json();
+                await sleep(500);
+
+                if (response.ok) {
+                    logToTerminal(`<b>[✅] VALIDATION PASSED:</b> ${result.message}`, "success");
+                    logToTerminal(`<b>[TRANSFER COMPLETE]</b> Funds secured to ${result.data.receiver}.`, "success");
+                } else {
+                    logToTerminal(`<b>[❌] FIREWALL REJECT (HTTP ${response.status}):</b> ${result.detail}`, "error");
+                }
+            } catch (error) {
+                logToTerminal(`Network Failure: ${error.message}`, "error");
+            }
+        }
+    </script>
+</body>
+</html>

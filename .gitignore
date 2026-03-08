@@ -1,0 +1,10 @@
+# Python virtual environment
+venv/
+__pycache__/
+*.pyc
+
+# Security Keys (NEVER upload private keys to GitHub)
+keys/*.pem
+
+# OS generated files
+.DS_Store
